@@ -1,0 +1,443 @@
+
+<body>
+
+
+<script src=https://rawgit.com/mrdoob/three.js/r83/build/three.min.js ></script>
+<script src=https://rawgit.com/mrdoob/three.js/r83/examples/js/controls/OrbitControls.js ></script>
+<script src=https://rawgit.com/mrdoob/three.js/r83/examples/js/libs/stats.min.js ></script>
+<script src=https://rawgit.com/mrdoob/three.js/r83/examples/js/Detector.js ></script>
+<script src=https://rawgit.com/mrdoob/three.js/r83/examples/js/libs/dat.gui.min.js ></script>
+
+<script> 
+
+//gui
+
+		var gui, guiView, guiFiles, guiViews, guiScans, guiCamera, guiExtras, guiHelp;
+	var guiConfig = {
+		zoom: 1.0,
+		rotate: 1.0,
+		pan_Vertical: 1.0,
+		pan_Horizontal: 1.0,
+		files_info: 'Click any of the following\nthree links.',
+		
+		home_view: function() {
+			guiConfig.cameraMoving = false;
+			controls.target.set(0, 0, 0);
+			camera.up.set(0, 1, 0);
+			camera.position.set(200, 100, 250);
+		},
+		top_view: function() {
+			guiConfig.cameraMoving = false;
+			controls.target.set(0,0,0);
+			camera.up.set(0,1,0);
+			camera.position.set(0, 200, 0);
+		},
+		side_view: function() {
+			guiConfig.cameraMoving = false;
+			camera.up.set(0,1,0);
+			controls.target.set(0,0,0);
+			camera.position.set(200, 5, 0);
+		},
+		highlighting: true,
+		opacityDefault: 0.02,
+		opacityHighlight: 0.8,
+		scansStart: 1,
+		scansFinish: 10,
+		cameraMoving: true,
+		cameraCutoffNear: 1,
+		cameraCutoffFar: 500,
+		planeVisible: false,
+		boundaryVisible: false,
+		axisVisible: false,
+		markerVisible: false,
+		markerX: 0,
+		markerY: 0,
+		markerZ: 0,
+		markerScaleX: 0,
+		markerScaleY: 0,
+		markerScaleZ: 0,
+
+	};
+
+	function buildGui() {
+		if (gui) {
+		  gui.destroy();
+		  gui = null;
+		}
+
+		gui = new dat.GUI( );
+
+		guiView = gui.addFolder('Zoom / Rotate / Pan');
+		guiView.open();
+		guiView.add( guiConfig, 'zoom', -50, 50 ).step(1).onFinishChange( function() {
+			guiConfig.cameraMoving = false;
+			zoomView ( guiConfig.zoom );
+		} );
+		guiView.add( guiConfig, 'rotate', -50, 50 ).step(1).onFinishChange( function(){
+			guiConfig.cameraMoving = false;
+			rotateView( guiConfig.rotate );
+		} );
+		guiView.add( guiConfig, 'pan_Vertical', -50, 50 ).step(1).onFinishChange( function() {
+			guiConfig.cameraMoving = false;
+			panView ( 0, guiConfig.pan_Vertical);
+		} );
+		guiView.add( guiConfig, 'pan_Horizontal', -50, 50 ).step(1).onFinishChange( function() {
+			guiConfig.cameraMoving = false;
+			panView ( guiConfig.pan_Horizontal, 0);
+		} );
+
+
+		guiViews = gui.addFolder('Views');
+		guiViews.add( guiConfig, 'home_view' );
+		guiViews.add( guiConfig, 'top_view' );
+		guiViews.add( guiConfig, 'side_view' );
+
+		guiScans = gui.addFolder('Scans');
+
+		guiScans.add( guiConfig, 'highlighting', true ).onChange( function() {
+			if ( !guiConfig.highlighting) {
+				guiConfig.highlighting = false;
+			} else {
+				guiConfig.highlighting = true;
+			}
+		} );
+
+		guiScans.add( guiConfig, 'opacityDefault', 0.01, 1 ).step(0.01).onChange( function() {
+			var i;
+			for (i = 0, l = scans.length; i < l; i++) {
+				scans[i].material.opacity = ( guiConfig.opacityDefault );
+			}
+		} );
+
+		guiScans.add( guiConfig, 'opacityHighlight').min(0.01).max(1).step(0.01).onChange( function() {
+		} );
+
+		guiScans.add( guiConfig, 'scansStart').min(1).max(slides.count).step(1).onChange( function() {
+			var i;
+			for (i = 0, l = slides.count; i < l; i++) {
+				if (i < guiConfig.scansStart || i > guiConfig.scansFinish) {scans.children[i].visible = false;
+				} else {
+					scans.children[i].visible = true;
+				}
+			}
+		} );
+
+		guiScans.add( guiConfig, 'scansFinish').min(1).max(slides.count).step(1).onChange( function() {
+			var i;
+			for (i = 0, l = slides.count; i < l; i++) {
+				if ( (scans.children &&  i < guiConfig.scansStart) || i > guiConfig.scansFinish ) {scans.children[i].visible = false;
+				} else {
+					scans.children[i].visible = true;
+				}
+			}
+		} );
+
+		guiCamera = gui.addFolder('Camera');
+		guiCamera.add( guiConfig, 'cameraMoving', true ).onChange( function() {
+			if ( !guiConfig.cameraMoving) {
+				guiConfig.cameraMoving = false;
+			} else {
+				guiConfig.cameraMoving = true;
+			}
+		} );
+
+		guiCamera.add( guiConfig, 'cameraCutoffNear', 1, 500 ).onChange( function() {
+			camera.near = guiConfig.cameraCutoffNear;
+			camera.updateProjectionMatrix();
+		} );
+
+		guiCamera.add( guiConfig, 'cameraCutoffFar', 1, 500 ).onChange( function() {
+			camera.far = guiConfig.cameraCutoffFar;
+			camera.updateProjectionMatrix();
+		} );
+
+		guiExtras = gui.addFolder('Extras');
+
+		guiExtras.add( guiConfig, 'planeVisible' ).onChange( togglePlane );
+		guiExtras.add( guiConfig, 'boundaryVisible' ).onChange( toggleBoundary );
+		guiExtras.add( guiConfig, 'axisVisible' ).onChange( toggleAxis );
+		guiExtras.add( guiConfig, 'markerVisible', true ).onChange( toggleMarker );
+		
+		guiExtras.add( guiConfig, 'markerX', -100, 100 ).onChange( function() {
+			if (box) { box.position.x = guiConfig.markerX; }
+		} );
+		guiExtras.add( guiConfig, 'markerY', -100, 100 ).onChange( function() {
+			if (box) { box.position.y = guiConfig.markerY; }
+		} );
+		guiExtras.add( guiConfig, 'markerZ', -100, 100 ).onChange( function() {
+			if (box) { box.position.z = guiConfig.markerZ; }
+		} );
+
+		guiExtras.add( guiConfig, 'markerScaleX', 0, 5 ).onChange( function() {
+			if (box) { box.scale.x = guiConfig.markerScaleX; }
+		} );
+		guiExtras.add( guiConfig, 'markerScaleY', 0, 5 ).onChange( function() {
+			if (box) { box.scale.y = guiConfig.markerScaleY; }
+		} );
+		guiExtras.add( guiConfig, 'markerScaleZ', 0, 5 ).onChange( function() {
+			if (box) { box.scale.z = guiConfig.markerScaleZ; }
+		} );
+
+		
+	}
+
+	function zoomView( y ) {
+		var elm = controls.domElement;
+		mouseEvent( elm, "mousedown", 1 );
+		mouseEvent( elm, "mousemove", 1, 0, -y );
+		mouseEvent( elm, "mouseup", 1 );
+	}
+
+	function rotateView( y ) {
+		var elm = controls.domElement, wiw = 0.5 * window.innerWidth, wih = 0.5 * window.innerHeight;
+		mouseEvent(elm, "mousedown", 0, wiw, wih);
+		mouseEvent(elm, "mousemove", 0, wiw - y, wih);
+		mouseEvent(elm, "mouseup");
+	}
+
+	function panView( x, y ) {
+		var elm = controls.domElement,  wiw = 0.5 * window.innerWidth, wih = 0.5 * window.innerHeight;
+		mouseEvent( elm, "mousedown", 2, wiw, wih );
+		mouseEvent( elm, "mousemove", 2, wiw + x, wih - y );
+		mouseEvent( elm, "mouseup", 2);
+	}
+	
+	function togglePlane() {
+		if ( guiConfig.planeVisible === false) {
+			if ( plane ) { plane.visible = false;	}
+		} else if ( plane ) {
+			plane.visible = true;	
+		} else {
+			geometry = new THREE.CubeGeometry( 500, 0.1, 500, 10, 10, 10);
+			material = new THREE.MeshNormalMaterial( { wireframe: true } );
+			plane = new THREE.Mesh( geometry, material );
+			plane.position.set(0, slides.meshY, 0);
+			scene.add( plane );
+		}	
+	}
+	function toggleAxis() {
+		if ( guiConfig.axisVisible === false) {
+			if ( axis ) { axis.visible = false;	}		
+		} else if ( axis ) {
+			axis.visible = true;	
+		} else {
+			axis = new THREE.AxisHelper( 100 );
+			scene.add( axis );			
+		}
+	}
+	
+	function toggleBoundary() {
+		if ( guiConfig.boundaryVisible === false) {
+			if ( boundary ) { boundary.visible = false;	}
+		} else if (boundary) { 
+			boundary.visible = true;
+		} else {
+			geometry = new THREE.CubeGeometry( 200, 200, 200, 1, 1, 1);
+			material = new THREE.MeshNormalMaterial( { wireframe: true } );
+			boundary = new THREE.Mesh( geometry, material );
+			boundary.rotation.x = slides.angle;
+			boundary.position.set(0, slides.startY + 0.5 * slides.count * slides.deltaY, slides.startZ + 0.5 * slides.count * slides.deltaZ);
+			scene.add( boundary );
+		}	
+	}
+	
+	function toggleMarker() {
+		if ( guiConfig.markerVisible === false) {
+			if ( box ) { box.visible = false;	}
+		} else if (box) { 
+			box.visible = true;
+		} else {
+			geometry = new THREE.CubeGeometry( 50, 50, 50);
+			material = new THREE.MeshNormalMaterial( { wireframe: true } );
+			box = new THREE.Mesh( geometry, material );
+			scene.add( box );
+		}	
+	}
+	
+	function toggleSplash() {
+		if ( splash.style.display === 'block' ) {
+			splash.style.display = 'none';
+		} else {
+			splash.style.display = 'block';
+		}		
+	};	
+	
+	function mouseEvent(element, type, button, cx, cy ) {
+		var evt,
+		e = {
+			bubbles: true, cancelable: (type !== "mousemove"), view: window, detail: 0,
+			screenX: 0, screenY: 0, clientX: cx, clientY: cy,
+			ctrlKey: false, altKey: false, shiftKey: false, metaKey: false,
+			button: button, relatedTarget: undefined
+		};
+		button = button || 0;
+		cx = cx || 0;
+		cy = cy || 0;
+		evt = document.createEvent("MouseEvents");
+		evt.initMouseEvent(type, e.bubbles, e.cancelable, e.view, e.detail,
+		e.screenX, e.screenY, e.clientX, e.clientY,
+		e.ctrlKey, e.altKey, e.shiftKey, e.metaKey,
+		e.button, document.body.parentNode);
+		element.dispatchEvent(evt);
+		return evt;
+	}	
+
+</script>
+
+<script>
+	 
+	//3d visualisation
+
+	var scene, camera, controls, light, stats, renderer;
+	var geometry, map, material, mesh;
+
+	var clock = new THREE.Clock();
+	var projector;
+	var intersected;
+	var mouseMove;
+	var raycaster;
+	var slidesGroup, plane, boundary, axis, box;
+
+
+
+
+
+	//slides array for an actual series of images to test
+
+	var slides =  {
+				count: 26,
+				dir: 'INSERT DIR HERE',
+				angle: 1.5708,
+				startY: -50,
+				startZ: 0,
+				deltaY: 5,
+				deltaZ: 0,
+				opacityDefault: 0.2,
+				meshY: -50
+			};
+	
+		
+
+	var visualisationApp = visualisationApp || {};
+
+	visualisationApp.buildVisualization = function() {
+
+		if ( slidesGroup ) { scene.remove( slidesGroup ); }
+
+
+		geometry = new THREE.PlaneGeometry( 200, 200, 1, 1);
+
+
+		slidesGroup = new THREE.Group();
+		
+		slidesGroup.current = 0;
+
+		for ( var i = 0; i < slides.count; i++ ) {
+		
+			
+
+			//simple test image for testing
+			//map = new THREE.TextureLoader().load("https:upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1200px-SNice.svg.png");
+
+			//another test image
+
+			map = new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/en/a/ae/Emory_University_Seal.png");
+			
+
+
+			//tester for series of slides based on slides array
+			//map = new THREE.TextureLoader().load(slides.dir + ( i + 1 ) + '.INSERT EXTENTION');
+
+			map.minFilter = map.magFilter = THREE.NearestFilter;
+			material = new THREE.MeshBasicMaterial( { color: 0xffffff, map: map, opacity: slides.opacityDefault, side: THREE.DoubleSide, transparent: true, wireframe: false} );
+			
+			mesh = new THREE.Mesh( geometry, material);
+			mesh.rotation.x = slides.angle;
+			mesh.position.set(0, slides.startY + i * slides.deltaY, slides.startZ + i * slides.deltaZ);
+			
+			slidesGroup.add( mesh );
+
+}
+		
+
+		scene.add( slidesGroup );
+	
+
+	};
+
+	init();
+	animate();
+
+	function init() {
+
+		renderer = new THREE.WebGLRenderer( {alpha: 1, antialias: true, clearColor: 0xffffff } );
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		document.body.appendChild( renderer.domElement );
+
+		scene = new THREE.Scene();
+
+		camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 10, 10000 );
+		camera.position.set( 200, 100, 250 );
+		scene.add( camera );
+
+		controls = new THREE.OrbitControls( camera, renderer.domElement );
+		controls.maxDistance = 800;
+
+
+
+		raycaster = new THREE.Raycaster();
+
+		document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+
+	guiConfig.opacityDefault = slides.opacityDefault;
+		guiConfig.scansFinish = slides
+		.count;
+		visualisationApp.buildVisualization();
+		buildGui();
+
+    }
+
+    function animate() {
+
+		requestAnimationFrame( animate );
+		render();
+		
+	}
+
+    function render() {
+
+		controls.update( clock.getDelta() );
+        renderer.render( scene, camera );
+
+	
+
+	
+    }
+
+	function onDocumentMouseMove( event ) {
+
+		var mouse = { x: -1, y: -1 };
+		mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+		raycaster.setFromCamera( mouse, camera );
+		var intersects = raycaster.intersectObjects( scene.children );
+
+		if ( intersects.length > 0 ) {
+			if ( guiConfig.highlighting && intersected !== intersects[ 0 ].object ) {
+				if ( intersected ) { intersected.material.opacity = guiConfig.opacityDefault; }
+				intersected = intersects[ 0 ].object;
+				slidesGroup.current = slidesGroup.children.indexOf(intersected);
+				visualisationApp.scanHighlight(slidesGroup.current);
+			}
+		} else {
+			if (intersected) { intersected.material.opacity = guiConfig.opacityDefault; }
+			intersected = null;
+		}
+		mouseMove = true;
+	}
+
+</script>
+</body>
+</html>
