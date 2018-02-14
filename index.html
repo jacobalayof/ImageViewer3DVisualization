@@ -68,40 +68,35 @@
 		gui = new dat.GUI( ), 
 		folderGlobal = gui.addFolder( 'Clipping' ),
 					propsGlobalX = {
-						get 'Enable X Plane'() { return renderer.clippingPlanes !== Empty; },
-						set 'Enable X Plane'( v  ) {
+						get 'Enable Clipping'() { return renderer.clippingPlanes !== Empty; },
+						set 'Enable Clipping'( v  ) {
 								renderer.clippingPlanes = v ? globalPlanes : Empty; },
 						get 'X-Plane'() { return xPlane.constant; },
 						set 'X-Plane'( v ) { xPlane.constant = v; },
 					};
 					propsGlobalY = {
-						get 'Enable Y Plane'() { return renderer.clippingPlanes !== Empty; },
-						set 'Enable Y Plane'( v  ) {
-								renderer.clippingPlanes = v ? globalPlanes : Empty; },
+						
 						get 'Y-Plane'() { return yPlane.constant; },
 						set 'Y-Plane'( v ) { yPlane.constant = v; },
 					};
 					propsGlobalZ = {
-						get 'Enable Z Plane'() { return renderer.clippingPlanes !== Empty; },
-						set 'Enable Z Plane'( v  ) {
-								renderer.clippingPlanes = v ? globalPlanes : Empty; },
+	
 						get 'Z-Plane'() { return zPlane.constant; },
 						set 'Z-Plane'( v ) { zPlane.constant = v; },
 					};
 					propsGlobalD = {
-						get 'Enable D Plane'() { return renderer.clippingPlanes !== Empty; },
-						set 'Enable D Plane'( v  ) {
-								renderer.clippingPlanes = v ? globalPlanes : Empty; },
+				
 						get 'D-Plane'() { return dPlane.constant; },
 						set 'D-Plane'( v ) { dPlane.constant = v; },
 					};
-				folderGlobal.add( propsGlobalX, 'Enable X Plane' );
+				folderGlobal.add( propsGlobalX, 'Enable Clipping' );
+				
 				folderGlobal.add( propsGlobalX, 'X-Plane', -200, 200);
-				folderGlobal.add( propsGlobalY, 'Enable Y Plane' );
+	
 				folderGlobal.add( propsGlobalY, 'Y-Plane', -200, 200 );
-				folderGlobal.add( propsGlobalZ, 'Enable Z Plane' );
+	
 				folderGlobal.add( propsGlobalZ, 'Z-Plane', -200, 200 );
-				folderGlobal.add( propsGlobalD, 'Enable D Plane' );
+
 				folderGlobal.add( propsGlobalD, 'D-Plane', -200, 200 );
 
 				startTime = Date.now();
@@ -124,12 +119,22 @@
 			guiConfig.cameraMoving = false;
 			panView ( guiConfig.pan_Horizontal, 0);
 		} );
+		// guiView.add( guiConfig, 'Transparency', -50, 50 ).step(1).onFinishChange( function() {
+			
+		// 	print("hi");
+
+
+
+		// } );
+
+
 
 
 		guiViews = gui.addFolder('Views');
 		guiViews.add( guiConfig, 'home_view' );
 		guiViews.add( guiConfig, 'top_view' );
 		guiViews.add( guiConfig, 'side_view' );
+	//	guiViews.add(guiConfig, 'Transparency')
 
 		
 
@@ -296,7 +301,7 @@
 				startZ: 0,
 				deltaY: 5,
 				deltaZ: 0,
-				opacityDefault: 0.2,
+				opacityDefault: 1,
 				meshY: -50
 			};
 	
@@ -320,14 +325,12 @@
 		
 			
 
-			//simple test image for testing
-			map = new THREE.TextureLoader().load("https:upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1200px-SNice.svg.png");
+			//simple url image for testing
+			//map = new THREE.TextureLoader().load("https:upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1200px-SNice.svg.png");
 
 			
 			
-			//map = new THREE.TextureLoader().load("https://s3.amazonaws.com/pathology-imageviewer/reg_slide_" + i + ".tif");
-			
-
+			map = new THREE.TextureLoader().load("https://s3.amazonaws.com/pathology-imageviewer/reg_slide_" + i + ".tif");
 			
 
 
@@ -337,6 +340,7 @@
 			map.minFilter = map.magFilter = THREE.NearestFilter;
 			material = new THREE.MeshBasicMaterial( { color: 0xffffff, map: map, opacity: slides.opacityDefault, side: THREE.DoubleSide, transparent: true, wireframe: false, clipShadows: true} );
 			
+
 			mesh = new THREE.Mesh( geometry, material);
 			mesh.rotation.x = slides.angle;
 			mesh.position.set(0, slides.startY + i * slides.deltaY, slides.startZ + i * slides.deltaZ);
