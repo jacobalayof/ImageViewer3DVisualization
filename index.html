@@ -65,7 +65,46 @@
 		  gui = null;
 		}
 
-		gui = new dat.GUI( );
+		gui = new dat.GUI( ), 
+		folderGlobal = gui.addFolder( 'Clipping' ),
+					propsGlobalX = {
+						get 'Enable X Plane'() { return renderer.clippingPlanes !== Empty; },
+						set 'Enable X Plane'( v  ) {
+								renderer.clippingPlanes = v ? globalPlanes : Empty; },
+						get 'X-Plane'() { return xPlane.constant; },
+						set 'X-Plane'( v ) { xPlane.constant = v; },
+					};
+					propsGlobalY = {
+						get 'Enable Y Plane'() { return renderer.clippingPlanes !== Empty; },
+						set 'Enable Y Plane'( v  ) {
+								renderer.clippingPlanes = v ? globalPlanes : Empty; },
+						get 'Y-Plane'() { return yPlane.constant; },
+						set 'Y-Plane'( v ) { yPlane.constant = v; },
+					};
+					propsGlobalZ = {
+						get 'Enable Z Plane'() { return renderer.clippingPlanes !== Empty; },
+						set 'Enable Z Plane'( v  ) {
+								renderer.clippingPlanes = v ? globalPlanes : Empty; },
+						get 'Z-Plane'() { return zPlane.constant; },
+						set 'Z-Plane'( v ) { zPlane.constant = v; },
+					};
+					propsGlobalD = {
+						get 'Enable D Plane'() { return renderer.clippingPlanes !== Empty; },
+						set 'Enable D Plane'( v  ) {
+								renderer.clippingPlanes = v ? globalPlanes : Empty; },
+						get 'D-Plane'() { return dPlane.constant; },
+						set 'D-Plane'( v ) { dPlane.constant = v; },
+					};
+				folderGlobal.add( propsGlobalX, 'Enable X Plane' );
+				folderGlobal.add( propsGlobalX, 'X-Plane', -200, 200);
+				folderGlobal.add( propsGlobalY, 'Enable Y Plane' );
+				folderGlobal.add( propsGlobalY, 'Y-Plane', -200, 200 );
+				folderGlobal.add( propsGlobalZ, 'Enable Z Plane' );
+				folderGlobal.add( propsGlobalZ, 'Z-Plane', -200, 200 );
+				folderGlobal.add( propsGlobalD, 'Enable D Plane' );
+				folderGlobal.add( propsGlobalD, 'D-Plane', -100, 90 );
+
+				startTime = Date.now();
 
 		guiView = gui.addFolder('Zoom / Rotate / Pan');
 		guiView.open();
@@ -302,6 +341,7 @@
 
 
 
+
 	//slides array for an actual series of images to test
 
 	var slides =  {
@@ -337,12 +377,11 @@
 			
 
 			//simple test image for testing
-			//map = new THREE.TextureLoader().load("https:upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1200px-SNice.svg.png");
-
-			//another test image
+			map = new THREE.TextureLoader().load("https:upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1200px-SNice.svg.png");
 
 			
-			map = new THREE.TextureLoader().load("https://s3.amazonaws.com/pathology-imageviewer/reg_slide_" + i + ".tif");
+			
+			//map = new THREE.TextureLoader().load("https://s3.amazonaws.com/pathology-imageviewer/reg_slide_" + i + ".tif");
 			
 
 			
@@ -352,7 +391,7 @@
 			//map = new THREE.TextureLoader().load(slides.dir + ( i + 1 ) + '.INSERT EXTENTION');
 
 			map.minFilter = map.magFilter = THREE.NearestFilter;
-			material = new THREE.MeshBasicMaterial( { color: 0xffffff, map: map, opacity: slides.opacityDefault, side: THREE.DoubleSide, transparent: true, wireframe: false} );
+			material = new THREE.MeshBasicMaterial( { color: 0xffffff, map: map, opacity: slides.opacityDefault, side: THREE.DoubleSide, transparent: true, wireframe: false, clipShadows: true} );
 			
 			mesh = new THREE.Mesh( geometry, material);
 			mesh.rotation.x = slides.angle;
@@ -387,7 +426,14 @@
 		controls.maxDistance = 800;
 
 
-
+	 xPlane = new THREE.Plane( new THREE.Vector3( - 1, 0, 0 ), .1 );
+	 yPlane = new THREE.Plane( new THREE.Vector3( 0, -1, 0 ), 0.1 );
+	 zPlane = new THREE.Plane( new THREE.Vector3( 0, 0, -1 ), 0.1 );
+	 dPlane = new THREE.Plane( new THREE.Vector3( -1, -1, 0 ), 0.1 );
+	  
+	 globalPlanes = [ xPlane, yPlane, zPlane, dPlane ],
+					Empty = Object.freeze( [] );
+				renderer.clippingPlanes = Empty; // GUI sets it to globalPlanes
 		raycaster = new THREE.Raycaster();
 
 		document.addEventListener( 'mousemove', onDocumentMouseMove, false );
