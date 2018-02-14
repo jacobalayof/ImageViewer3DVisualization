@@ -102,7 +102,7 @@
 				folderGlobal.add( propsGlobalZ, 'Enable Z Plane' );
 				folderGlobal.add( propsGlobalZ, 'Z-Plane', -200, 200 );
 				folderGlobal.add( propsGlobalD, 'Enable D Plane' );
-				folderGlobal.add( propsGlobalD, 'D-Plane', -100, 90 );
+				folderGlobal.add( propsGlobalD, 'D-Plane', -200, 200 );
 
 				startTime = Date.now();
 
@@ -131,66 +131,10 @@
 		guiViews.add( guiConfig, 'top_view' );
 		guiViews.add( guiConfig, 'side_view' );
 
-		guiScans = gui.addFolder('Scans');
+		
 
-		guiScans.add( guiConfig, 'highlighting', true ).onChange( function() {
-			if ( !guiConfig.highlighting) {
-				guiConfig.highlighting = false;
-			} else {
-				guiConfig.highlighting = true;
-			}
-		} );
 
-		guiScans.add( guiConfig, 'opacityDefault', 0.01, 1 ).step(0.01).onChange( function() {
-			var i;
-			for (i = 0, l = scans.length; i < l; i++) {
-				scans[i].material.opacity = ( guiConfig.opacityDefault );
-			}
-		} );
-
-		guiScans.add( guiConfig, 'opacityHighlight').min(0.01).max(1).step(0.01).onChange( function() {
-		} );
-
-		guiScans.add( guiConfig, 'scansStart').min(1).max(slides.count).step(1).onChange( function() {
-			var i;
-			for (i = 0, l = slides.count; i < l; i++) {
-				if (i < guiConfig.scansStart || i > guiConfig.scansFinish) {scans.children[i].visible = false;
-				} else {
-					scans.children[i].visible = true;
-				}
-			}
-		} );
-
-		guiScans.add( guiConfig, 'scansFinish').min(1).max(slides.count).step(1).onChange( function() {
-			var i;
-			for (i = 0, l = slides.count; i < l; i++) {
-				if ( (scans.children &&  i < guiConfig.scansStart) || i > guiConfig.scansFinish ) {scans.children[i].visible = false;
-				} else {
-					scans.children[i].visible = true;
-				}
-			}
-		} );
-
-		guiCamera = gui.addFolder('Camera');
-		guiCamera.add( guiConfig, 'cameraMoving', true ).onChange( function() {
-			if ( !guiConfig.cameraMoving) {
-				guiConfig.cameraMoving = false;
-			} else {
-				guiConfig.cameraMoving = true;
-			}
-		} );
-
-		guiCamera.add( guiConfig, 'cameraCutoffNear', 1, 500 ).onChange( function() {
-			camera.near = guiConfig.cameraCutoffNear;
-			camera.updateProjectionMatrix();
-		} );
-
-		guiCamera.add( guiConfig, 'cameraCutoffFar', 1, 500 ).onChange( function() {
-			camera.far = guiConfig.cameraCutoffFar;
-			camera.updateProjectionMatrix();
-		} );
-
-		guiExtras = gui.addFolder('Extras');
+		guiExtras = gui.addFolder('Scene Set-Up');
 
 		guiExtras.add( guiConfig, 'planeVisible' ).onChange( togglePlane );
 		guiExtras.add( guiConfig, 'boundaryVisible' ).onChange( toggleBoundary );
