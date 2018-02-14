@@ -57,8 +57,8 @@
 		markerScaleX: 0,
 		markerScaleY: 0,
 		markerScaleZ: 0,
-
 	};
+
 
 	function buildGui() {
 		if (gui) {
@@ -90,7 +90,7 @@
 						get 'D-Plane'() { return dPlane.constant; },
 						set 'D-Plane'( v ) { dPlane.constant = v; },
 					};
-				
+
 				folderGlobal.add( propsGlobalX, 'Enable Clipping' );
 				
 				folderGlobal.add( propsGlobalX, 'X-Plane', -200, 200);
@@ -125,15 +125,10 @@
 		} );
 
 
-
-
 		guiViews = gui.addFolder('Views');
 		guiViews.add( guiConfig, 'home_view' );
 		guiViews.add( guiConfig, 'top_view' );
 		guiViews.add( guiConfig, 'side_view' );
-
-
-		
 
 
 		guiExtras = gui.addFolder('Scene Set-Up');
@@ -282,10 +277,6 @@
 	var slidesGroup, plane, boundary, axis, box;
 
 
-
-
-
-
 	//slides array for an actual series of images to test
 
 	var slides =  {
@@ -316,7 +307,7 @@
 		
 		slidesGroup.current = 0;
 
-		for ( var i = 0; i < slides.count; i++ ) {
+		for ( var i = 10; i <= 20; i++ ) {
 		
 			
 
