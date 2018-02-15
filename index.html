@@ -14,10 +14,10 @@
 
 		var gui, guiView, guiFiles, guiViews, guiScans, guiCamera, guiExtras, guiHelp;
 	var guiConfig = {
-		zoom: 1.0,
-		rotate: 1.0,
-		pan_Vertical: 1.0,
-		pan_Horizontal: 1.0,
+		Zoom: 1.0,
+		Rotate: 1.0,
+		Vertical: 1.0,
+		Horizontal: 1.0,
 		
 		files_info: 'Click any of the following\nthree links.',
 		
@@ -107,21 +107,21 @@
 
 		guiView = gui.addFolder('Zoom / Rotate / Pan');
 		guiView.open();
-		guiView.add( guiConfig, 'zoom', -50, 50 ).step(1).onFinishChange( function() {
+		guiView.add( guiConfig, 'Zoom', -50, 50 ).step(1).onFinishChange( function() {
 			guiConfig.cameraMoving = false;
-			zoomView ( guiConfig.zoom );
+			ZoomView ( guiConfig.Zoom );
 		} );
-		guiView.add( guiConfig, 'rotate', -50, 50 ).step(1).onFinishChange( function(){
+		guiView.add( guiConfig, 'Rotate', -50, 50 ).step(1).onFinishChange( function(){
 			guiConfig.cameraMoving = false;
-			rotateView( guiConfig.rotate );
+			RotateView( guiConfig.Rotate );
 		} );
-		guiView.add( guiConfig, 'pan_Vertical', -50, 50 ).step(1).onFinishChange( function() {
+		guiView.add( guiConfig, 'Vertical', -50, 50 ).step(1).onFinishChange( function() {
 			guiConfig.cameraMoving = false;
-			panView ( 0, guiConfig.pan_Vertical);
+			panView ( 0, guiConfig.Vertical);
 		} );
-		guiView.add( guiConfig, 'pan_Horizontal', -50, 50 ).step(1).onFinishChange( function() {
+		guiView.add( guiConfig, 'Horizontal', -50, 50 ).step(1).onFinishChange( function() {
 			guiConfig.cameraMoving = false;
-			panView ( guiConfig.pan_Horizontal, 0);
+			panView ( guiConfig.Horizontal, 0);
 		} );
 
 
@@ -161,14 +161,14 @@
 		
 	}
 
-	function zoomView( y ) {
+	function ZoomView( y ) {
 		var elm = controls.domElement;
 		mouseEvent( elm, "mousedown", 1 );
 		mouseEvent( elm, "mousemove", 1, 0, -y );
 		mouseEvent( elm, "mouseup", 1 );
 	}
 
-	function rotateView( y ) {
+	function RotateView( y ) {
 		var elm = controls.domElement, wiw = 0.5 * window.innerWidth, wih = 0.5 * window.innerHeight;
 		mouseEvent(elm, "mousedown", 0, wiw, wih);
 		mouseEvent(elm, "mousemove", 0, wiw - y, wih);
